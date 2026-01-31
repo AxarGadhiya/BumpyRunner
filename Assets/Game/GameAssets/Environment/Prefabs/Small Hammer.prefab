@@ -172,7 +172,6 @@ GameObject:
   - component: {fileID: 1181677233812093436}
   - component: {fileID: 5176836811150008538}
   - component: {fileID: 8488524664458628521}
-  - component: {fileID: 3860006442309868784}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -255,7 +254,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7312840419914614211}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 5c668d14ca6ee5a498b8bad632ee9466, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -271,21 +270,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3860006442309868784
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7312840419914614211}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b02b1171e1be9514ea03ed3ff41bd14b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  force: 7
-  stunTime: 0.5
-  activeRagdoll: 1
 --- !u!1 &7469812834536250859
 GameObject:
   m_ObjectHideFlags: 0

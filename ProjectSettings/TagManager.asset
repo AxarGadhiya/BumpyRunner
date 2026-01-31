@@ -6,6 +6,8 @@ TagManager:
   tags:
   - JoyStick
   - TargetBot
+  - Platform
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -20,7 +22,7 @@ TagManager:
   - Trampoline
   - BotPoint
   - PlayerCheckPoint
-  - 
+  - Silhoutte
   - 
   - 
   - 

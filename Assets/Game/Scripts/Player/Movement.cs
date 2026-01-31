@@ -73,14 +73,6 @@ public class Movement : MonoBehaviour
 
 	public float diveSpeed = 200f;
 
-	[SerializeField] private bool requireForwardInputForAirDive = true;
-
-	[SerializeField] private float airDiveForwardInputThreshold = 0.1f;
-
-	// Additional safety to avoid "standing double-jump => dive" due to input drift.
-	// Checks actual movement in the facing (transform.forward) direction.
-	[SerializeField] private float airDiveMinForwardSpeed = 1.0f;
-
 	private float x;
 
 	private float y;
@@ -168,17 +160,8 @@ public class Movement : MonoBehaviour
         // IMPORTANT: If player is in air and jump input is received, it should dive
         if (!grounded)
         {
-            // Mobile-style behavior: 2nd jump press (while airborne) becomes a dive,
-            // but only if player actually jumped already and is moving forward.
-			if (!hasJumped)
-			{
-				return;
-			}
-
-			if (!requireForwardInputForAirDive || HasForwardInput())
-			{
-				DiveInMovementDirection();
-			}
+            // Player in air: dive in movement direction
+            DiveInMovementDirection();
         }
         else if (readyToJump)
         {
@@ -186,23 +169,6 @@ public class Movement : MonoBehaviour
             JumpStraightUp();
         }
     }
-
-	private bool HasForwardInput()
-	{
-		// Require BOTH:
-		// 1) Intent to move forward (filters joystick drift)
-		// 2) Actual forward movement in facing direction (transform.forward)
-		float forwardIntent = (playerInput != null) ? playerInput.Vertical : y;
-		if (forwardIntent <= airDiveForwardInputThreshold)
-		{
-			return false;
-		}
-
-		Vector3 horizontalVel = rb.linearVelocity;
-		horizontalVel.y = 0f;
-		float forwardSpeed = Vector3.Dot(horizontalVel, base.transform.forward);
-		return forwardSpeed >= airDiveMinForwardSpeed;
-	}
 
 	private void FixedUpdate()
 	{
@@ -235,8 +201,7 @@ public class Movement : MonoBehaviour
 		//{
 		//	anim.SetTrigger("Emote");
 		//}
-		// Only disable ragdoll if it's actually active and player has settled
-		if (ragdollScript != null && ragdollScript.ragdoll && beingHit && rb.linearVelocity.magnitude <= 1f)
+		if (rb.linearVelocity.magnitude <= 1f)
 		{
 			//if (PhotonNetwork.IsConnected)
 			//{
@@ -562,13 +527,20 @@ public class Movement : MonoBehaviour
 
 	private void DiveInMovementDirection()
 	{
-		// Dive forward (player facing direction) on 2nd jump press while airborne
+		// Dive in the direction of movement when in air
 		if (!canDive || waitDelay)
 		{
 			return;
 		}
 		
-		Vector3 moveDirection = base.transform.forward;
+		// Calculate movement direction based on current input and camera orientation
+		Vector3 moveDirection = Quaternion.Euler(0f, Camera.main.transform.eulerAngles.y, 0f) * new Vector3(x, 0f, y).normalized;
+		if (moveDirection.magnitude < 0.1f)
+		{
+			// Fallback to forward direction if no input
+			moveDirection = base.transform.forward;
+		}
+		moveDirection.Normalize();
 		
 		//hugScript.canHug = false;
 		anim.SetBool("DiveStart", value: true);
@@ -756,24 +728,16 @@ public class Movement : MonoBehaviour
 
 	public void StopRagdoll()
 	{
-		// Only disable ragdoll if it's actually active
-		if (ragdollScript != null && ragdollScript.ragdoll)
-		{
-			anim.SetBool("GetUp", value: false);
-			ragdollScript.DisableRagdoll();
-		}
+		anim.SetBool("GetUp", value: false);
+		ragdollScript.DisableRagdoll();
 	}
 
     //---------------[PunRPC]----------------------
     private void StopRagdollPun()
 	{
-		// Only disable ragdoll if it's actually active
-		if (ragdollScript != null && ragdollScript.ragdoll)
-		{
-			ragdollScript.DisableRagdoll();
-			getUp = false;
-			beingHit = false;
-		}
+		ragdollScript.DisableRagdoll();
+		getUp = false;
+		beingHit = false;
 	}
 
 	private IEnumerator GettingHitCoolDown()

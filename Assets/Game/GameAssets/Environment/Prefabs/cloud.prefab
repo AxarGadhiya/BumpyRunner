@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2064903589556124628}
   - component: {fileID: 7866750844792909551}
-  - component: {fileID: 8358962138525245385}
+  - component: {fileID: 8413285705020584958}
   m_Layer: 10
   m_Name: cloud
   m_TagString: Untagged
@@ -55,7 +55,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 438.86105, y: 121.65906, z: 546.29}
   m_Center: {x: 12.269474, y: 92.035965, z: 3.484436e-15}
---- !u!114 &8358962138525245385
+--- !u!114 &8413285705020584958
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

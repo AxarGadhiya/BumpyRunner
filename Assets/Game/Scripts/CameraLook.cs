@@ -57,7 +57,7 @@ public class CameraLook : MonoBehaviour
 		//Cursor.visible = false;
 
 		GameObject gameObject = GameObject.FindGameObjectWithTag("Player");
-		gameObject.GetComponent<Movement>().disableOnAwake = false;
+		gameObject.GetComponent<Player>().disableOnAwake = false;
 		_target = gameObject.transform.GetChild(0);
 	}
 
