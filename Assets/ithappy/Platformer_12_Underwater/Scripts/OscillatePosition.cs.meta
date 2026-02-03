@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: aa1115e73ae34ab43952ae45b62fb2de
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 295348
+  packageName: Platformer 12 Underwater - Low Poly 3D Models Pack
+  packageVersion: 2.1
+  assetPath: Assets/ithappy/Platformer_12_Underwater/Scripts/OscillatePosition.cs
+  uploadId: 782128

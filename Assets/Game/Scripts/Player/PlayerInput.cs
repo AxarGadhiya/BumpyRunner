@@ -25,7 +25,7 @@ public class PlayerInput : MonoBehaviour
 
 
 
-    [SerializeField] CameraLook cameraLook;
+    //[SerializeField] CameraLook cameraLook;
 
 
     private void Awake()
@@ -44,7 +44,7 @@ public class PlayerInput : MonoBehaviour
 
     private void Update()
     {
-        cameraLook.LookAxis = fixedTouchLookField.TouchDist;
+        //cameraLook.LookAxis = fixedTouchLookField.TouchDist;
         ReadInput();
     }
 

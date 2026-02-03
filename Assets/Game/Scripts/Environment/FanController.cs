@@ -4,7 +4,7 @@ public class FanController : MonoBehaviour
 {
 	public float speed = 200f;
 
-	public bool right;
+	public bool Up;
 
 	public Vector3 normalPos;
 
@@ -30,13 +30,13 @@ public class FanController : MonoBehaviour
 			{
 				return;
 			}
-			if (right)
+			if (Up)
 			{
-				other.gameObject.GetComponent<Rigidbody>().AddForce(base.transform.right * speed, ForceMode.Force);
+                other.gameObject.GetComponent<Rigidbody>().AddForce(speed * Time.deltaTime * base.transform.up, ForceMode.Force);
 			}
 			else
 			{
-				other.gameObject.GetComponent<Rigidbody>().AddForce(-base.transform.right * speed, ForceMode.Force);
+                other.gameObject.GetComponent<Rigidbody>().AddForce(speed * Time.deltaTime * -base.transform.up, ForceMode.Force);
 			}
 		}
 		if ((layerMask.value & (1 << other.transform.gameObject.layer)) > 0)

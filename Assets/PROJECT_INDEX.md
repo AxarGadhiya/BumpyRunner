@@ -12,9 +12,13 @@ Main game content directory containing all game-specific assets and scripts.
 
 **Subdirectories:**
 - **`/Scripts/`** - All C# game scripts
-  - **`/Player/`** - Player-related scripts
-    - **`/AI/`** - AI bot controller scripts
+  - **`/Character/`** - core modular controller logic (Shared for Player & AI)
+  - **`/Player/`** - Player-specific inputs and logic
+  - **`/AI/`** - AI-specific logic
+  - **`/Old/`** - Deprecated/Unused scripts (`Movement.cs`, `AIController.cs`)
+  - **`/Camera/`** - Camera systems
   - **`/Environment/`** - Environmental interaction scripts
+  - **`/GamePlay/`** - Gameplay and round management
 - **`/GameAssets/`** - Game assets (meshes, materials, prefabs)
   - **`/Character/`** - Character models and materials
   - **`/Environment/`** - Environment meshes, materials, and prefabs
@@ -25,6 +29,17 @@ Main game content directory containing all game-specific assets and scripts.
 
 #### `/Joystick Pack/`
 Third-party joystick input system for mobile controls.
+**Subdirectories:**
+- **`/Scripts/`** - Core joystick logic (`Base`, `Joysticks`, `Editor`)
+- **`/Prefabs/`** - Ready-to-use joystick prefabs
+- **`/Examples/`** - Example scenes and scripts
+
+#### `/ithappy/`
+Environment and level art asset packs.
+**Subdirectories:**
+- **`/Platformer_12_Underwater/`** - Underwater theme assets
+- **`/Platformer_3_Chocolate/`** - Chocolate/Candy theme assets
+- **`/Sweet_Land/`** - General sweet/candy land environment assets
 
 #### `/Photon/`
 Photon networking integration (currently commented out in code).
@@ -69,77 +84,39 @@ Unity project settings and configurations.
 
 ---
 
-### Player Systems
+### Character System (Modular)
 
-#### `Movement.cs`
-**Location:** `/Game/Scripts/Player/Movement.cs`
+#### `CharacterController.cs` (Shared)
+**Location:** `/Game/Scripts/Character/CharacterController.cs`
 
-**Purpose:** Main player movement controller with physics-based movement.
+**Purpose:** Unified controller for both Player and AI agents. Replaces the old `Movement.cs`.
 
 **Key Features:**
-- **Input Handling:**
-  - Desktop: Keyboard + Mouse
-  - Mobile: Joystick input
-- **Movement Mechanics:**
-  - Physics-based movement using Rigidbody
-  - Slope detection and handling
-  - Ground detection
-  - Counter-movement for precise control
-  - Max speed limiting
-- **Actions:**
-  - Jumping with cooldown
-  - Diving (forward momentum boost)
-  - Crouching (not fully implemented)
-- **Ragdoll System:**
-  - Integration with `Ragdoll.cs`
-  - Getting hit by other players
-  - Auto-recovery from ragdoll state
-- **Animation:**
-  - Controls Animator parameters (Jump, Fall, Incline, GetUp, DiveStart)
-  - Handles character rotation based on movement direction
+- **Unified Logic:** Handles physics, movement, jumps, dives, and slopes for ALL characters.
+- **Input Agnostic:** Receives input commands (`SetInput`, `SetDive`) from external scripts (`Player.cs` or `AI.cs`).
+- **Dependencies:**
+  - `CharacterPhysics.cs` - Handles Raycasting, Ground checks, and Collision events.
+  - `CharacterAnimator.cs` - Handles Animation state updates.
+  - `Ragdoll.cs` - Handles ragdoll activation/deactivation.
 
-**Key Methods:**
-- `Move()` - Physics-based movement in FixedUpdate
-- `Jump()` - Jump mechanics with force application
-- `Dive()` - Diving mechanics with momentum
-- `GettingHit()` - Triggers ragdoll when hit by other players
-- `OnSlope()` - Detects if player is on a slope
-- `GroundedFloor()` - Ground detection using raycast
+#### `Player.cs`
+**Location:** `/Game/Scripts/Player/Player.cs`
+**Purpose:** Handles User Input (Joystick/Keyboard) and passes it to `CharacterController`.
 
-**Dependencies:**
-- `Ragdoll.cs` - For ragdoll physics
-- `FixedJoystick` - For mobile input
-- `Camera.main` - For orientation
+#### `AI.cs`
+**Location:** `/Game/Scripts/Character/AI.cs`
+**Purpose:** Handles Goal/Target logic for bots and passes directional input to `CharacterController`.
+
+#### `CharacterPhysics.cs`
+**Location:** `/Game/Scripts/Character/CharacterPhysics.cs`
+**Purpose:** Pure physics handling - Ground detection, Wall detection, and Collision callbacks.
 
 ---
 
-#### `AIController.cs`
-**Location:** `/Game/Scripts/Player/AI/AIController.cs`
-
-**Purpose:** AI bot controller that mimics player movement but follows target points.
-
-**Key Features:**
-- **AI Behavior:**
-  - Follows target transforms (waypoints)
-  - Wall detection and avoidance
-  - Automatic jumping over gaps
-  - Jump-and-dive combo for obstacles
-- **Movement:**
-  - Similar physics to `Movement.cs`
-  - Simplified input (always moves forward)
-  - Wall collision detection (left/right)
-- **Target System:**
-  - Uses `TargetPointsAI.cs` to set waypoints
-  - Follows target with rotation smoothing
-
-**Key Methods:**
-- `FollowTargetWithRotation()` - Smoothly rotates toward target
-- `CheckWall()` - Detects walls and triggers jumps/dives
-- `JumpAndDive()` - Coroutine for obstacle navigation
-
-**Dependencies:**
-- `TargetPointsAI.cs` - For waypoint management
-- `Ragdoll.cs` - For ragdoll physics
+### Deprecated / Old Scripts
+**Location:** `/Game/Scripts/Old/`
+- **`Movement.cs`**: Old monolithic player controller. Kept for reference.
+- **`AIController.cs`**: Old monolithic AI controller. Kept for reference.
 
 ---
 

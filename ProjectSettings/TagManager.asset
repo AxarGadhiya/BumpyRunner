@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - JoyStick
   - TargetBot
   - Platform
   - Wall
@@ -21,7 +20,7 @@ TagManager:
   - WallBot
   - Trampoline
   - BotPoint
-  - PlayerCheckPoint
+  - ObstacleEnv
   - Silhoutte
   - 
   - 

@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Game/Scenes/GameScene.unity
-    guid: 3ec02b48c3240224baa1f450aa04cd2f
+    path: Assets/Game/Scenes/GameSceneWater.unity
+    guid: 54913b0fa90cc58429ea809b3c5dd17d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
