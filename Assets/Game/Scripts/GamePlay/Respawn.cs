@@ -14,7 +14,7 @@ public class Respawn : MonoBehaviour
         }
 
         // Check if it's an AI
-        if (other.TryGetComponent<AI>(out AI ai))
+        if (other.TryGetComponent<BotController>(out BotController ai))
         {
              PlayerSpawnner.Instance.RespawnCharacter(other.gameObject, PlayerSpawnner.Instance.botPrefab);
              return;

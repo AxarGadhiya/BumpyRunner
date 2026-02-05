@@ -75,9 +75,11 @@ public class CharacterController : MonoBehaviour
 	private float capsuleHeight;
 	private RaycastHit slopeHit;
 
+    [Header("Fall Guys Braking")]
+    [SerializeField] private float stopDrag = 8f;      // how hard we stop
+    [SerializeField] private float minStopSpeed = 0.2f; // snap to zero
 
-
-    private Transform Orientation => movementOrientation != null ? movementOrientation : transform;
+  private Transform Orientation => movementOrientation != null ? movementOrientation : transform;
 	private Vector3 normalVector => characterPhysics != null ? characterPhysics.NormalVector : Vector3.up;
 
 	private void Awake()
@@ -137,14 +139,18 @@ public class CharacterController : MonoBehaviour
 	{
         if (beingHit || gettingUp) return;
         Move();
-      // StepClimb(); // Add step climb check
-		ProcessDive();
+        ApplyBraking();
+        // StepClimb(); // Add step climb check
+        ProcessDive();
 
      //  KeepUprightOnGround();
     }
 
-	/// <summary>Set movement input. Call from Player or AI each Update.</summary>
-	public void SetInput(float horizontal, float vertical)
+ 
+
+
+    /// <summary>Set movement input. Call from Player or AI each Update.</summary>
+    public void SetInput(float horizontal, float vertical)
 	{
 		x = horizontal;
 		y = vertical;
@@ -207,26 +213,24 @@ public class CharacterController : MonoBehaviour
 		if (y < 0f && num2 < -num3) y = 0f;
 
 		// Apply movement force once (flat and slope), so slope speed matches flat speed.
-		// NOTE: Previously, flat ground was getting movement force twice (once above + once below),
-		// which made slopes feel slower. This unified path keeps behaviour consistent.
 		if (surfaceSpeed <= num3)
 		{
-			//if (useWallAvoidance && !onSlope)
-			//{
-			//	if (_hitLeft)
-			//		Rb.AddForce(dt * moveSpeed * num4 * num5 * y * transform.right, ForceMode.Force);
-			//	else if (_hitRight)
-			//		Rb.AddForce((-y) * dt * moveSpeed * num4 * num5 * transform.right, ForceMode.Force);
-			//	Rb.AddRelativeForce(dt * moveSpeed * num4 * num5 * y * Vector3.forward, ForceMode.Force);
-			//}
-			//else
-			//{
+			if (useWallAvoidance && !onSlope)
+			{
+				if (_hitLeft)
+					Rb.AddForce(dt * moveSpeed * num4 * num5 * y * transform.right, ForceMode.Force);
+				else if (_hitRight)
+					Rb.AddForce((-y) * dt * moveSpeed * num4 * num5 * transform.right, ForceMode.Force);
+				Rb.AddRelativeForce(dt * moveSpeed * num4 * num5 * y * Vector3.forward, ForceMode.Force);
+			}
+			else
+			{
 				//Vector3 inputDir = Orientation.forward * y + Orientation.right * x;
 				Vector3 inputDir = transform.forward * y + transform.right * x;
 		
 				if (inputDir.sqrMagnitude > 0.01f && (!grounded || groundedAndUnderSpeed))
 				{
-                Debug.Log("inputDir.sqrMagnitude" + inputDir.sqrMagnitude);
+               // Debug.Log("inputDir.sqrMagnitude" + inputDir.sqrMagnitude);
                 float inputMagnitude = Mathf.Min(1f, inputDir.magnitude);
 					Vector3 moveDir = inputDir.normalized;
 					if (onSlope && grounded)
@@ -234,21 +238,45 @@ public class CharacterController : MonoBehaviour
 					float speed = moveSpeed * (onSlope ? slopeSpeedMultiplier : 1f);
 					Rb.AddForce(dt * inputMagnitude * num4 * num5 * speed * moveDir, ForceMode.Force);
 
-					// Optional: cancel gravity pulling down the slope so uphill speed matches flat.
-					if (onSlope && grounded && slopeGravityCompensation > 0f)
+                Rb.AddForce(Vector3.up * 3f, ForceMode.Force);
+
+                // Optional: cancel gravity pulling down the slope so uphill speed matches flat.
+                if (onSlope && grounded && slopeGravityCompensation > 0f)
 					{
 						Vector3 gravityAlongSlope = Vector3.ProjectOnPlane(Physics.gravity, slopeHit.normal);
 						Rb.AddForce(-gravityAlongSlope * slopeGravityCompensation, ForceMode.Acceleration);
 					}
 				}
-			//}
+			}
 		}
 
       //  Debug.Log($"x:{x} y:{y} grounded:{grounded} beingHit:{beingHit} vel:{Rb.linearVelocity}");
 
     }
 
+    private void ApplyBraking()
+    {
+        if (!canMove || beingHit) return;
 
+        // no input → brake
+        if (Mathf.Abs(y) < 0.01f)
+        {
+            Vector3 vel = Rb.linearVelocity;
+            Vector3 horizontalVel = new Vector3(vel.x, 0f, vel.z);
+
+            if (horizontalVel.magnitude > minStopSpeed)
+            {
+                // Apply counter force (Fall Guys style)
+                Vector3 brakeForce = -horizontalVel.normalized * stopDrag;
+                Rb.AddForce(brakeForce, ForceMode.Acceleration);
+            }
+            else
+            {
+                // snap to full stop
+                Rb.linearVelocity = new Vector3(0f, vel.y, 0f);
+            }
+        }
+    }
 
 
     private void ProcessDive()
@@ -402,9 +430,9 @@ public class CharacterController : MonoBehaviour
 	{
 		Debug.Log("GettingHitCoolDown");
 		yield return new WaitForSeconds(2f);
-		if (ragdollScript != null && ragdollScript.ragdoll)
+		if (ragdollScript != null)
 		{
-			ragdollScript.DisableRagdoll();
+			if (ragdollScript.ragdoll) ragdollScript.DisableRagdoll();
             StartCoroutine(AutoGetUpRoutine());
             beingHit = false;
 		}
@@ -446,9 +474,13 @@ public class CharacterController : MonoBehaviour
         // wait 1 frame so ragdoll fully disables
         yield return null;
 
-        // wait until grounded (if in air)
-        while (!grounded)
+        // wait until grounded (if in air) with a fallback timeout
+        float groundWaitTimer = 0f;
+        while (!grounded && groundWaitTimer < 2f)
+        {
+            groundWaitTimer += Time.deltaTime;
             yield return null;
+        }
 
         // smooth upright
         float duration = 0.25f;

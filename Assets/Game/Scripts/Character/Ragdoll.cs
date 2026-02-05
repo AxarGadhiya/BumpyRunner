@@ -41,7 +41,7 @@ public class Ragdoll : MonoBehaviour
 	{
 		Debug.Log("<color=cyan>Enable Ragdoll</color>");
 
-		if (base.transform.parent.gameObject.layer == LayerMask.NameToLayer("Player")&&!ragdoll)
+		if (!ragdoll)
 		{
 			ragdoll = true;
 			anim.SetBool("STOPALL", value: true);

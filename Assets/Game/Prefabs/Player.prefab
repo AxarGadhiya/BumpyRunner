@@ -93,7 +93,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2646357252177023858}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 119.8, y: 0.391, z: 91.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -105,7 +105,7 @@ Transform:
   - {fileID: 3966188262704251414}
   - {fileID: 5567505157484239294}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1086416918904846653
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,14 +123,12 @@ MonoBehaviour:
   requireForwardInputForAirDive: 1
   airDiveForwardInputThreshold: 0.1
   airDiveMinForwardSpeed: 1
-  inputStrength: 0.15
   turnSpeed: 25
-  acceleration: 10
-  deceleration: 14
   minMoveInput: 0.05
   moveStartAngle: 20
   playerCamera: {fileID: 0}
   autoFindCamera: 1
+  inputStrength: 0.15
 --- !u!114 &8355896538919188720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,13 +166,15 @@ MonoBehaviour:
   stepCheckDistanceHead1: 0.5
   stepCheckDistanceHead2: 1
   useCounterMovement: 0
-  useWallAvoidance: 0
+  useWallAvoidance: 1
   canMove: 1
   beingHit: 0
   readyToJump: 1
   canDive: 1
   isJumping: 0
   hasJumped: 0
+  stopDrag: 8
+  minStopSpeed: 0.2
 --- !u!114 &7269861560980792546
 MonoBehaviour:
   m_ObjectHideFlags: 0

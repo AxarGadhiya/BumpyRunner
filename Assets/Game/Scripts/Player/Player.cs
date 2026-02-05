@@ -1,17 +1,13 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-/// <summary>
-/// Player-specific input and camera-relative control.
-/// Use with CharacterController on the same GameObject. Does not replace Movement.cs.
-/// </summary>
+
 public class Player : MonoBehaviour
 {
 	[Header("References")]
 	[SerializeField] private CharacterController characterController;
 	[SerializeField] private CharacterAnimator characterAnimator;
 	private PlayerInput playerInput;
-	//[SerializeField] private FixedJoystick fixedJoystick;
 
 	[Header("Options")]
 	[SerializeField] private bool requireForwardInputForAirDive = true;
@@ -20,19 +16,25 @@ public class Player : MonoBehaviour
 
 	private float vertical;
 
-    [SerializeField] float inputStrength=0.15f;
+   
 
     private MoveState moveState = MoveState.Idle;
-    private Vector3 desiredDirection = Vector3.zero;
-    private Vector3 lastMoveDir;
+
 
 
     [Header("Fall Guys Feel")]
     [SerializeField] private float turnSpeed = 25f;
-    [SerializeField] private float acceleration = 10f;     // how fast input ramps up
-    [SerializeField] private float deceleration = 14f;     // how fast input goes back to 0
     [SerializeField] private float minMoveInput = 0.15f;   // deadzone
     [SerializeField] private float moveStartAngle = 12f;   // similar to your turnBeforeMoveAngle
+    //[SerializeField] private float acceleration = 10f;     // how fast input ramps up
+    //[SerializeField] private float deceleration = 14f;     // how fast input goes back to 0
+
+    [Header("Camera References")]
+    [SerializeField] private Transform playerCamera;
+    [SerializeField] private bool autoFindCamera = true;
+
+    private Vector3 desiredDirection = Vector3.zero;
+    [SerializeField] float inputStrength = 0.15f;
 
     private enum MoveState
     {
@@ -55,9 +57,7 @@ public class Player : MonoBehaviour
     #endregion
 
 
-    [Header("Camera References")]
-    [SerializeField] private Transform playerCamera;
-    [SerializeField] private bool autoFindCamera = true;
+
 
     private void Awake()
     {
@@ -130,6 +130,9 @@ public class Player : MonoBehaviour
 
         characterAnimator.SetIncline(!characterController.OnSlope());
     }
+    // -------------------------------------------------------------
+    // -------------------- UPDATE (INPUT + STATE) -----------------
+    // -------------------------------------------------------------
 
     private void Update()
     {
@@ -240,6 +243,17 @@ public class Player : MonoBehaviour
         //);
     }
 
+    private void LateUpdate()
+    {
+        if (characterController != null && characterController.hasJumped && characterAnimator != null)
+            characterAnimator.SetJump(true);
+    }
+
+    private void SetAnimGetUp(bool value)
+    {
+        if (characterAnimator != null) characterAnimator.SetGetUp(value);
+    }
+
     //    private void Update()
     //    {
     //        if (characterController != null)
@@ -316,16 +330,7 @@ public class Player : MonoBehaviour
     //        }
     //    }
 
-    private void LateUpdate()
-    {
-        if (characterController != null && characterController.hasJumped && characterAnimator != null)
-            characterAnimator.SetJump(true);
-    }
 
-    private void SetAnimGetUp(bool value)
-    {
-        if (characterAnimator != null) characterAnimator.SetGetUp(value);
-    }
 
 }
 //private float turnSmoothVelocity;
