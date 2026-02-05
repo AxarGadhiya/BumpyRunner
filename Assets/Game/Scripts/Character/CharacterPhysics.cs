@@ -44,10 +44,10 @@ public class CharacterPhysics : MonoBehaviour
 
 	private void OnCollisionEnter(Collision collision)
 	{
-		Rigidbody otherRb = collision.gameObject.GetComponent<Rigidbody>();
-		if (otherRb == null) return;
-		if (collision.gameObject.CompareTag("Player") && otherRb.linearVelocity.magnitude >= 7f)
-			OnHitByPlayer?.Invoke();
+		//Rigidbody otherRb = collision.gameObject.GetComponent<Rigidbody>();
+		//if (otherRb == null) return;
+		//if (collision.gameObject.CompareTag("Player") && otherRb.linearVelocity.magnitude >= 7f)
+		//	OnHitByPlayer?.Invoke();
 	}
 
 	private void OnCollisionStay(Collision other)

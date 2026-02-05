@@ -75,7 +75,9 @@ public class CharacterController : MonoBehaviour
 	private float capsuleHeight;
 	private RaycastHit slopeHit;
 
-	private Transform Orientation => movementOrientation != null ? movementOrientation : transform;
+
+
+    private Transform Orientation => movementOrientation != null ? movementOrientation : transform;
 	private Vector3 normalVector => characterPhysics != null ? characterPhysics.NormalVector : Vector3.up;
 
 	private void Awake()
@@ -90,10 +92,13 @@ public class CharacterController : MonoBehaviour
 
 		if (anim == null) anim = GetComponentInChildren<Animator>();
 		if (ragdollScript == null) ragdollScript = GetComponentInChildren<Ragdoll>();
-	}
 
-	/// <summary>Single path: animation only via CharacterAnimator when assigned, else Animator.</summary>
-	private void SetAnimJump(bool value) { if (characterAnimator != null) characterAnimator.SetJump(value); else if (anim != null) anim.SetBool("Jump", value); }
+        Rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+    }
+
+    /// <summary>Single path: animation only via CharacterAnimator when assigned, else Animator.</summary>
+    private void SetAnimJump(bool value) { if (characterAnimator != null) characterAnimator.SetJump(value); else if (anim != null) anim.SetBool("Jump", value); }
 	private void SetAnimDiveStart(bool value) { if (characterAnimator != null) characterAnimator.SetDiveStart(value); else if (anim != null) anim.SetBool("DiveStart", value); }
 	private void SetAnimGetUp(bool value) { if (characterAnimator != null) characterAnimator.SetGetUp(value); else if (anim != null) anim.SetBool("GetUp", value); }
 
@@ -130,12 +135,12 @@ public class CharacterController : MonoBehaviour
 	// Movement/jump/dive in FixedUpdate: Time.deltaTime = Time.fixedDeltaTime here, so same behaviour at any FPS.
 	private void FixedUpdate()
 	{
-		if (beingHit) return;
-		Move();
+        if (beingHit || gettingUp) return;
+        Move();
       // StepClimb(); // Add step climb check
 		ProcessDive();
 
-       // KeepUprightOnGround();
+     //  KeepUprightOnGround();
     }
 
 	/// <summary>Set movement input. Call from Player or AI each Update.</summary>
@@ -176,8 +181,8 @@ public class CharacterController : MonoBehaviour
 		float num = mag.x;
 		float num2 = mag.y;
 
-		if (useCounterMovement && !beingHit)
-			CounterMovement(x, y, mag);
+		//if (useCounterMovement && !beingHit)
+		//	CounterMovement(x, y, mag);
 
 		float num3 = maxSpeed;
 		if (!canMove) return;
@@ -206,26 +211,28 @@ public class CharacterController : MonoBehaviour
 		// which made slopes feel slower. This unified path keeps behaviour consistent.
 		if (surfaceSpeed <= num3)
 		{
-			if (useWallAvoidance && !onSlope)
-			{
-				if (_hitLeft)
-					Rb.AddForce(transform.right * y * moveSpeed * dt * num4 * num5, ForceMode.Force);
-				else if (_hitRight)
-					Rb.AddForce(transform.right * (-y) * moveSpeed * dt * num4 * num5, ForceMode.Force);
-				Rb.AddRelativeForce(Vector3.forward * y * moveSpeed * dt * num4 * num5, ForceMode.Force);
-			}
-			else
-			{
+			//if (useWallAvoidance && !onSlope)
+			//{
+			//	if (_hitLeft)
+			//		Rb.AddForce(dt * moveSpeed * num4 * num5 * y * transform.right, ForceMode.Force);
+			//	else if (_hitRight)
+			//		Rb.AddForce((-y) * dt * moveSpeed * num4 * num5 * transform.right, ForceMode.Force);
+			//	Rb.AddRelativeForce(dt * moveSpeed * num4 * num5 * y * Vector3.forward, ForceMode.Force);
+			//}
+			//else
+			//{
 				//Vector3 inputDir = Orientation.forward * y + Orientation.right * x;
 				Vector3 inputDir = transform.forward * y + transform.right * x;
+		
 				if (inputDir.sqrMagnitude > 0.01f && (!grounded || groundedAndUnderSpeed))
 				{
-					float inputMagnitude = Mathf.Min(1f, inputDir.magnitude);
+                Debug.Log("inputDir.sqrMagnitude" + inputDir.sqrMagnitude);
+                float inputMagnitude = Mathf.Min(1f, inputDir.magnitude);
 					Vector3 moveDir = inputDir.normalized;
 					if (onSlope && grounded)
 						moveDir = Vector3.ProjectOnPlane(moveDir, slopeHit.normal).normalized;
 					float speed = moveSpeed * (onSlope ? slopeSpeedMultiplier : 1f);
-					Rb.AddForce(moveDir * inputMagnitude * speed * dt * num4 * num5, ForceMode.Force);
+					Rb.AddForce(dt * inputMagnitude * num4 * num5 * speed * moveDir, ForceMode.Force);
 
 					// Optional: cancel gravity pulling down the slope so uphill speed matches flat.
 					if (onSlope && grounded && slopeGravityCompensation > 0f)
@@ -234,24 +241,14 @@ public class CharacterController : MonoBehaviour
 						Rb.AddForce(-gravityAlongSlope * slopeGravityCompensation, ForceMode.Acceleration);
 					}
 				}
-			}
+			//}
 		}
-	}
 
-    private void KeepUprightOnGround()
-    {
-        if (!grounded) return;
+      //  Debug.Log($"x:{x} y:{y} grounded:{grounded} beingHit:{beingHit} vel:{Rb.linearVelocity}");
 
-        Vector3 upDir = OnSlope() ? slopeHit.normal : Vector3.up;
-
-        Vector3 forwardFlat = Vector3.ProjectOnPlane(transform.forward, upDir).normalized;
-        if (forwardFlat == Vector3.zero) forwardFlat = transform.forward;
-
-        Quaternion targetRot = Quaternion.LookRotation(forwardFlat, upDir);
-
-        float uprightSpeed = 12f;
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.fixedDeltaTime * uprightSpeed);
     }
+
+
 
 
     private void ProcessDive()
@@ -269,7 +266,7 @@ public class CharacterController : MonoBehaviour
 		if (useDiveMomentum)
 		{
 			momentum = Rb.linearVelocity.magnitude < 10f ? 1f : 0.5f;
-			Rb.AddForce(transform.forward * momentum * Rb.linearVelocity.magnitude / 4f * 200f, ForceMode.Force);
+			Rb.AddForce(momentum * Rb.linearVelocity.magnitude * transform.forward / 4f * 200f, ForceMode.Force);
 		}
 		else
 			Rb.AddForce(transform.forward * diveSpeed, ForceMode.Force);
@@ -295,8 +292,8 @@ public class CharacterController : MonoBehaviour
 		hasJumped = true;
 		readyToJump = false;
 		jumping = true;
-		Rb.AddForce(Vector2.up * jumpForce * 1.5f);
-		Rb.AddForce(normalVector * jumpForce * 0.5f);
+		Rb.AddForce(1.5f * jumpForce * Vector2.up);
+		Rb.AddForce(0.5f * jumpForce * normalVector);
 		Vector3 vel = Rb.linearVelocity;
 		if (Rb.linearVelocity.y < 0.5f)
 			Rb.linearVelocity = new Vector3(vel.x, 0f, vel.z);
@@ -335,10 +332,21 @@ public class CharacterController : MonoBehaviour
 	{
 		if (!grounded || jumping) return;
 		float dt = Time.fixedDeltaTime;
+
 		if ((Math.Abs(mag.x) > threshold && Math.Abs(x) < 0.05f) || (mag.x < -threshold && x > 0f) || (mag.x > threshold && x < 0f))
-			Rb.AddForce(moveSpeed * Orientation.right * dt * (-mag.x) * counterMovement);
+		{
+          //  Rb.AddForce(moveSpeed * Orientation.right * dt * (-mag.x) * counterMovement);
+          Rb.AddForce(moveSpeed * transform.right * dt * (-mag.x) * counterMovement);
+        }
+			
+
 		if ((Math.Abs(mag.y) > threshold && Math.Abs(y) < 0.05f) || (mag.y < -threshold && y > 0f) || (mag.y > threshold && y < 0f))
-			Rb.AddForce(moveSpeed * Orientation.forward * dt * (-mag.y) * counterMovement);
+		{
+            //Rb.AddForce(moveSpeed * Orientation.forward * dt * (-mag.y) * counterMovement);
+            Rb.AddForce(moveSpeed * transform.forward * dt * (-mag.y) * counterMovement);
+        }
+			
+
 		if (Mathf.Sqrt(Rb.linearVelocity.x * Rb.linearVelocity.x + Rb.linearVelocity.z * Rb.linearVelocity.z) > maxSpeed)
 		{
 			float ny = Rb.linearVelocity.y;
@@ -350,7 +358,8 @@ public class CharacterController : MonoBehaviour
 	public Vector2 FindVelRelativeToLook()
 	{
 		// Use surface velocity (ignore vertical) so speed checks work the same on slopes.
-		float current = Orientation.eulerAngles.y;
+		//float current = Orientation.eulerAngles.y;
+		float current = transform.eulerAngles.y;
 		bool onSlope = OnSlope();
 		Vector3 surfaceVel = Vector3.ProjectOnPlane(Rb.linearVelocity, onSlope ? slopeHit.normal : Vector3.up);
 		Quaternion yawRot = Quaternion.Euler(0f, current, 0f);
@@ -378,26 +387,37 @@ public class CharacterController : MonoBehaviour
 	public void GettingHit()
 	{
 		beingHit = true;
-		if (ragdollScript != null) ragdollScript.EnableRagdoll();
+
+		Debug.Log("============Getting Hit=========");
+
+        if (Rb != null)
+            Rb.constraints = RigidbodyConstraints.None;
+
+        if (ragdollScript != null) ragdollScript.EnableRagdoll();
+
 		StartCoroutine(GettingHitCoolDown());
 	}
 
 	private IEnumerator GettingHitCoolDown()
 	{
+		Debug.Log("GettingHitCoolDown");
 		yield return new WaitForSeconds(2f);
 		if (ragdollScript != null && ragdollScript.ragdoll)
 		{
 			ragdollScript.DisableRagdoll();
-			beingHit = false;
+            StartCoroutine(AutoGetUpRoutine());
+            beingHit = false;
 		}
 	}
 
 	public void StopRagdoll()
 	{
+		Debug.Log("Stop Ragdoll");
 		if (ragdollScript != null && ragdollScript.ragdoll)
 		{
-			SetAnimGetUp(false);
+			//SetAnimGetUp(false);
 			ragdollScript.DisableRagdoll();
+			StartCoroutine(AutoGetUpRoutine());
 			beingHit = false;
 		}
 	}
@@ -410,10 +430,95 @@ public class CharacterController : MonoBehaviour
 
 	public bool Jumping => jumping;
 
+    private bool gettingUp;
+
+    private IEnumerator AutoGetUpRoutine()
+    {
+		Debug.Log("==============AutoGetUpRoutine==========");
+
+        gettingUp = true;
+        canMove = false;
+
+        // stop momentum
+        Rb.linearVelocity = Vector3.zero;
+        Rb.angularVelocity = Vector3.zero;
+
+        // wait 1 frame so ragdoll fully disables
+        yield return null;
+
+        // wait until grounded (if in air)
+        while (!grounded)
+            yield return null;
+
+        // smooth upright
+        float duration = 0.25f;
+        float t = 0f;
+
+        Quaternion startRot = transform.rotation;
+        Quaternion targetRot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+
+        Vector3 startPos = Rb.position;
+        Vector3 targetPos = startPos + Vector3.up * 0.15f;
+
+        while (t < 1f)
+        {
+            t += Time.fixedDeltaTime / duration;
+
+            Rb.MoveRotation(Quaternion.Slerp(startRot, targetRot, t));
+            Rb.MovePosition(Vector3.Lerp(startPos, targetPos, t));
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        // lock tilt after getup
+       // Rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+        // reset states
+        readyToJump = true;
+        jumping = false;
+        isJumping = false;
+        canDive = true;
+        waitDelay = false;
+
+        beingHit = false;
+        canMove = true;
+        gettingUp = false;
+    }
+
+    public void RotateTowards(Vector3 dir, float turnSpeed)
+    {
+        if (dir == Vector3.zero || Rb == null) return;
+
+        Quaternion targetRot = Quaternion.LookRotation(dir, Vector3.up);
+        Quaternion newRot = Quaternion.Slerp(
+            Rb.rotation,
+            targetRot,
+            turnSpeed * Time.fixedDeltaTime
+        );
+
+        Rb.MoveRotation(newRot);
+    }
+
+
+    private void KeepUprightOnGround()
+    {
+        if (!grounded) return;
+
+        Vector3 upDir = OnSlope() ? slopeHit.normal : Vector3.up;
+
+        Vector3 forwardFlat = Vector3.ProjectOnPlane(transform.forward, upDir).normalized;
+        if (forwardFlat == Vector3.zero) forwardFlat = transform.forward;
+
+        Quaternion targetRot = Quaternion.LookRotation(forwardFlat, upDir);
+
+        float uprightSpeed = 12f;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.fixedDeltaTime * uprightSpeed);
+    }
+
     private void StepClimb()
     {
         // 1. Only climb if grounded and moving
-        if (beingHit&&!grounded || isJumping || (new Vector2(x, y).magnitude < 0.1f)) return;
+        if (beingHit||!grounded || isJumping || (new Vector2(x, y).magnitude < 0.1f)) return;
 
         // 2. Setup rays
         // Direction we are trying to move (Flattened to ignore looking down/up)

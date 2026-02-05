@@ -30,7 +30,7 @@ public class Bounce : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Collision ENter name=>" + collision.gameObject.name + " With " + debugName);
+       // Debug.Log("Collision ENter name=>" + collision.gameObject.name + " With " + debugName);
 
         if (collision.gameObject.TryGetComponent<CharacterController>(out CharacterController character))
         {
@@ -61,7 +61,7 @@ public class Bounce : MonoBehaviour
                     collision.rigidbody.AddForce(Time.deltaTime * upwardForce * Vector3.up, ForceMode.Impulse);
                 }
 
-                Debug.Log($"<color=cyan>Bounce applying force dir={bounceDir}, force={force}, blendUp={blendHitWithUpDirection}, addUp={addUpwardForce}, upForce={upwardForce}</color>");
+              //  Debug.Log($"<color=cyan>Bounce applying force dir={bounceDir}, force={force}, blendUp={blendHitWithUpDirection}, addUp={addUpwardForce}, upForce={upwardForce}</color>");
 
                 ApplyRagdollRoutine(collision);
             }
@@ -80,7 +80,7 @@ public class Bounce : MonoBehaviour
                 debugName = gameObject.name;
             }
 
-            Debug.Log($"<color=yellow>Enter Collision game object </color>{collision.gameObject.name} with {debugName}");
+          //  Debug.Log($"<color=yellow>Enter Collision game object </color>{collision.gameObject.name} with {debugName}");
 
             // collision.gameObject.GetComponentInChildren<Animator>().SetBool("STOPALL", value: true);
             if (collision.gameObject.TryGetComponent<CharacterAnimator>(out CharacterAnimator animator))
@@ -98,7 +98,7 @@ public class Bounce : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        Debug.Log("Collision Exit name=>" + collision.gameObject.name + " With " + debugName);
+       // Debug.Log("Collision Exit name=>" + collision.gameObject.name + " With " + debugName);
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             if (activeRagdoll)
@@ -108,7 +108,7 @@ public class Bounce : MonoBehaviour
                     debugName = gameObject.name;
                 }
 
-                Debug.Log($"<color=yellow> Enter Collision game object </color>{collision.gameObject.name} with {debugName}");
+               // Debug.Log($"<color=yellow> Enter Collision game object </color>{collision.gameObject.name} with {debugName}");
 
                 //collision.gameObject.GetComponentInChildren<Animator>().SetBool("STOPALL", value: false);
 

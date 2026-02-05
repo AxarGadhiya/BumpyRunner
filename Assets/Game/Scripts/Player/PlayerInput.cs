@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 
 public class PlayerInput : MonoBehaviour
@@ -30,8 +29,31 @@ public class PlayerInput : MonoBehaviour
 
     private void Awake()
     {
-        isMobile = SystemInfo.deviceType != DeviceType.Desktop;
+        //isMobile = SystemInfo.deviceType != DeviceType.Desktop;
 
+        if (Application.platform == RuntimePlatform.Android)
+        {
+            isMobile = true;
+            // Code specific to Android
+            Debug.Log("Running on Android.");
+        }
+        else if (Application.platform == RuntimePlatform.IPhonePlayer)
+        {
+            isMobile = true;
+            // Code specific to iOS
+            Debug.Log("Running on iOS.");
+        }
+        else if (Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            isMobile = false;
+            // Code specific to Windows
+            Debug.Log("Running on Windows.");
+        }
+
+#if UNITY_EDITOR
+        isMobile = true;
+#endif
+        dragged = false;
         //if (isMobile)
         //{
         //    GameObject joystickObj = GameObject.FindGameObjectWithTag("JoyStick");
@@ -48,48 +70,74 @@ public class PlayerInput : MonoBehaviour
         ReadInput();
     }
 
+    public bool dragged;
+
     private void ReadInput()
     {
+        // Reset one-frame buttons
+        JumpReleased = false;
+
         if (isMobile)
         {
-            Horizontal = movementJoyStick != null ? movementJoyStick.Horizontal * 2f : 0f;
-            Vertical = movementJoyStick != null ? movementJoyStick.Vertical * 2f : 0f;
+            if (movementJoyStick != null)
+            {
+                dragged = movementJoyStick.Dragged;
+                Horizontal = Mathf.Clamp(movementJoyStick.Horizontal, -1f, 1f);
+                Vertical = Mathf.Clamp(movementJoyStick.Vertical, -1f, 1f);
+
+                // Deadzone (prevents drift)
+                float deadZone = 0.15f;
+                if (new Vector2(Horizontal, Vertical).magnitude < deadZone)
+                {
+                    Horizontal = 0f;
+                    Vertical = 0f;
+
+                  
+                }
+                //else
+                //{
+                //    Debug.Log($"---------Hori{Horizontal}------Verti{Vertical}----------Input NOT In dead zone--------------------");
+                //}
+            }
+            else
+            {
+                Horizontal = 0f;
+                Vertical = 0f;
+
+              //  Debug.Log("-------------------------JoyStick nulll--------------------");
+            }
+
+            // Mobile jump held from UI events
+            JumpHeld = mobileJumpHeld;
+
+            // Dive is one-frame trigger (button sets it true)
+            // After reading it, reset it so it doesn't stay stuck
+            bool diveThisFrame = DivePressed;
+            DivePressed = false;
+            DivePressed = diveThisFrame;
         }
         else
         {
             Horizontal = Input.GetAxisRaw("Horizontal");
             Vertical = Input.GetAxisRaw("Vertical");
-        }
 
-        // Jump input - keyboard
-        bool jumpInput = isMobile ? false : Input.GetButton("Jump");
-        
-        // For mobile, preserve the mobileJumpHeld state; for keyboard, use input
-        if (isMobile)
-        {
-            JumpHeld = mobileJumpHeld; // Keep mobile jump held state
-        }
-        else
-        {
-            JumpHeld = jumpInput; // Use keyboard input
-        }
-        
-        // Invoke jump action when keyboard jump is pressed
-        if (Input.GetButtonDown("Jump"))
-        {
-            OnJumpInput?.Invoke();
-        }
-        JumpReleased = Input.GetButtonUp("Jump");
+            JumpHeld = Input.GetButton("Jump");
+            JumpReleased = Input.GetButtonUp("Jump");
 
-        // Dive input
-        DivePressed = Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.LeftShift);
+            if (Input.GetButtonDown("Jump"))
+                OnJumpInput?.Invoke();
+
+            DivePressed = Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.LeftShift);
+        }
     }
 
-    public Vector3 GetInputVector(Transform cameraTransform)
-    {
-        Vector3 input = new Vector3(Horizontal, 0f, Vertical).normalized;
-        return Quaternion.Euler(0f, cameraTransform.eulerAngles.y, 0f) * input;
-    }
+
+  
+    //public Vector3 GetInputVector(Transform cameraTransform)
+    //{
+    //    Vector3 input = new Vector3(Horizontal, 0f, Vertical).normalized;
+    //    return Quaternion.Euler(0f, cameraTransform.eulerAngles.y, 0f) * input;
+    //}
 
     // Mobile jump method (called from UI button/FixedTouchField OnPressedDown)
     public void OnMobileJump()
@@ -116,3 +164,41 @@ public class PlayerInput : MonoBehaviour
         DivePressed = true;
     }
 }
+
+
+//private void ReadInput()
+//{
+//    if (isMobile)
+//    {
+//        Horizontal = movementJoyStick != null ? movementJoyStick.Horizontal * 2f : 0f;
+//        Vertical = movementJoyStick != null ? movementJoyStick.Vertical * 2f : 0f;
+//    }
+//    else
+//    {
+//        Horizontal = Input.GetAxisRaw("Horizontal");
+//        Vertical = Input.GetAxisRaw("Vertical");
+//    }
+
+//    // Jump input - keyboard
+//    bool jumpInput = isMobile ? false : Input.GetButton("Jump");
+
+//    // For mobile, preserve the mobileJumpHeld state; for keyboard, use input
+//    if (isMobile)
+//    {
+//        JumpHeld = mobileJumpHeld; // Keep mobile jump held state
+//    }
+//    else
+//    {
+//        JumpHeld = jumpInput; // Use keyboard input
+//    }
+
+//    // Invoke jump action when keyboard jump is pressed
+//    if (Input.GetButtonDown("Jump"))
+//    {
+//        OnJumpInput?.Invoke();
+//    }
+//    JumpReleased = Input.GetButtonUp("Jump");
+
+//    // Dive input
+//    DivePressed = Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.LeftShift);
+//}

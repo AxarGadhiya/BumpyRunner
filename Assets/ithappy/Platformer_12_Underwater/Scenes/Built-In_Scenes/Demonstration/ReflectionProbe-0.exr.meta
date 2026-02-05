@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: f89d5256140b83c4e95ae68339dcbee1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 295348
+  packageName: Platformer 12 Underwater - Low Poly 3D Models Pack
+  packageVersion: 2.1
+  assetPath: Assets/ithappy/Platformer_12_Underwater/Scenes/Built-In_Scenes/Demonstration/ReflectionProbe-0.exr
+  uploadId: 782128
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -93,6 +100,32 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 100
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites: []
@@ -115,10 +148,3 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 295348
-  packageName: Platformer 12 Underwater - Low Poly 3D Models Pack
-  packageVersion: 2.1
-  assetPath: Assets/ithappy/Platformer_12_Underwater/Scenes/Built-In_Scenes/Demonstration/ReflectionProbe-0.exr
-  uploadId: 782128
